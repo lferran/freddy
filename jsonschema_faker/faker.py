@@ -70,7 +70,6 @@ def generate(schema: Dict[str, Any]) -> Any:
         "null": lambda s: None,
         "boolean": generate_boolean,
         "string": generate_string,
-        "string": generate_string,
         "integer": generate_integer,
         "number": generate_number,
         "array": generate_array,
