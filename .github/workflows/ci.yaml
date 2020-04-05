@@ -1,0 +1,57 @@
+name: jsonschema-faker
+
+on: [push]
+
+jobs:
+
+  # Job to run pre-checks
+  pre-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install package
+        run: |
+          pip install flake8 mypy black isort
+      - name: Run pre-checks
+        run: |
+          flake8 jsonschema_faker --config=setup.cfg
+          flake8 tests --config=setup.cfg
+          mypy jsonschema_faker --ignore-missing-imports
+          mypy tests --ignore-missing-imports
+          isort -c -rc jsonschema_faker
+          isort -c -rc tests
+          black --check --verbose jsonschema_faker
+          black --check --verbose tests
+
+  # Job to run tests
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the package
+        run: |
+          pip install -e .[test]
+
+      - name: Run tests
+        run: |
+          pytest -rfE -s --tb=native -v tests/

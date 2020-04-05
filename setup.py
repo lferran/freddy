@@ -25,7 +25,7 @@ setup(
     keywords=[],
     zip_safe=True,
     include_package_data=True,
-    packages=["jsonschema-faker"],
+    packages=["jsonschema_faker"],
     install_requires=[],
     extras_require={"test": ["pytest", "jsonschema"]},
 )

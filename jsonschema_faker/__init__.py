@@ -1,1 +1,1 @@
-from . import faker  # noqa
+from .faker import *  # noqa
