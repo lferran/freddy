@@ -1,5 +1,70 @@
+import unittest
+
 import jsonschema
 import jsonschema_faker
+
+
+class TestBasicType(unittest.TestCase):
+    def _makeOne(self, schema):
+        return jsonschema_faker.generate(schema)
+
+
+class TestBoolean(TestBasicType):
+    def test_returns_bool(self):
+        self.assertIsInstance(self._makeOne({"type": "boolean"}), bool)
+
+
+class TestNull(TestBasicType):
+    def test_returns_none(self):
+        self.assertIsNone(self._makeOne({"type": "null"}))
+
+
+class TestInteger(TestBasicType):
+    def test_returns_integer(self):
+        self.assertIsInstance(self._makeOne({"type": "integer"}), int)
+
+    def test_min_max_returns_in_range(self):
+        self.assertEqual(
+            self._makeOne({"type": "integer", "minimum": 9, "maximum": 9}), 9
+        )
+
+    def test_exclusive_min_max_returns_in_range(self):
+        self.assertEqual(
+            self._makeOne(
+                {
+                    "type": "integer",
+                    "minimum": 9,
+                    "maximum": 10,
+                    "exclusiveMinimum": True,
+                }
+            ),
+            10,
+        )
+        self.assertEqual(
+            self._makeOne(
+                {
+                    "type": "integer",
+                    "minimum": 9,
+                    "maximum": 10,
+                    "exclusiveMaximum": True,
+                }
+            ),
+            9,
+        )
+
+
+class TestString(TestBasicType):
+    def test_returns_string(self):
+        self.assertIsInstance(self._makeOne({"type": "string"}), str)
+
+    def test_min_max_returns_in_length_range(self):
+        self.assertEqual(
+            len(self._makeOne({"type": "string", "minLength": 6, "maxLength": 6})), 6
+        )
+        self.assertIn(
+            len(self._makeOne({"type": "string", "minLength": 0, "maxLength": 2})),
+            range(0, 2),
+        )
 
 
 def test_dummy():

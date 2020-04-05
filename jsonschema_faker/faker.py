@@ -5,16 +5,31 @@ from typing import Any, Dict, List, Optional, Union
 
 
 """
-# todo
-- add testing
-- github actions
+# Yet todo
 - complete support to basic types (as much as possible)
 - support multiple types
 - support const
 - support definitions/refs
 - regular expressions
+- support number multipleOf
+- support string built-in formats:
+  - date-time
+  - time
+  - date
+  - email
+  - idn-email
+  - hostname
+  - idn-hostname
+  - ipv4
+  - ipv6
+  - uri
+  - uri-reference
+  - iri
+  - iri-reference
+  - json-pointer
+  - relative-json-pointer
 
-# Does not support
+# Will not support
 - allOf
 - not
 - conditionals: if, then, else
@@ -40,7 +55,7 @@ def _validate_schema(schema: Dict[str, Any]):
     """
     Raise error if schema is not one that we support
     """
-    for unsupported in ("allOf", "not", "if", "then", "else"):
+    for unsupported in ("allOf", "not", "if", "then", "else", "multipleOf"):
         if unsupported in schema:
             raise UnsupportedSchema(
                 schema, reason=f"{unsupported} key is not supported"
@@ -94,8 +109,20 @@ def generate_string(schema: Dict[str, Any]) -> str:
 
 
 def generate_integer(schema: Dict[str, Any]) -> int:
+    # Try getting minimum and maximum
     minimum = schema.get("minimum", 0)
     maximum = schema.get("maximum", 100)
+    # Support exclusives
+    try:
+        if schema["exclusiveMinimum"]:
+            minimum += 1
+    except KeyError:
+        pass
+    try:
+        if schema["exclusiveMaximum"]:
+            maximum -= 1
+    except KeyError:
+        pass
     return random.randint(minimum, maximum)
 
 
