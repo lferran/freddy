@@ -4,7 +4,7 @@ Provides random fake data valid for a given json schema.
 
 ## Usage
 
-``` python
+```python
 import jsonschema_faker
 
 schema = {
@@ -15,6 +15,7 @@ schema = {
                 "name": { "type": "string" },
                 "children": {
                     "type": "array",
+                    "maxItems": 2,
                     "items": { "$ref": "#/definitions/person" },
                     "default": []
                 }
@@ -27,7 +28,8 @@ schema = {
     }
 }
 
-jsonschema_faker.generate(schema)
+print(jsonschema_faker.generate(schema))
+{'person': {'name': 'nqguo', 'children': [{'name': 'va', 'children': [{'name': 'i', 'children': []}]}, {'name': 'vimkrcjkur', 'children': []}]}}
 ```
 
 ## Install
@@ -50,3 +52,25 @@ pip install -e .[test]
 ```shell
 pytest tests/
 ```
+
+## Json-schema support
+
+- [x] boolean type
+- [x] null type
+- [x] string type
+- [x] number type
+- [x] integer type
+- [x] array type
+- [x] object type
+- [x] definitions/references
+- [x] Boolean type
+- [] consts
+- [] string regex
+- [] string built-in formats
+- [] number `multipleOf` keyword
+- [] be able to provide custom basic type factories
+
+### Does not support:
+
+- `allOf` and `not` keywords
+- conditional keywords `if`, `then` and `else`

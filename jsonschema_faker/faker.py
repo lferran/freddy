@@ -1,40 +1,7 @@
 import copy
-import json
 import random
 import string
 from typing import Any, Callable, Dict, List, Optional, Union
-
-
-"""
-# Yet todo
-- complete support to basic types (as much as possible)
-- support multiple types
-- support const
-- support definitions/refs
-- regular expressions
-- support number multipleOf
-- support string built-in formats:
-  - date-time
-  - time
-  - date
-  - email
-  - idn-email
-  - hostname
-  - idn-hostname
-  - ipv4
-  - ipv6
-  - uri
-  - uri-reference
-  - iri
-  - iri-reference
-  - json-pointer
-  - relative-json-pointer
-
-# Will not support
-- allOf
-- not
-- conditionals: if, then, else
-"""
 
 
 class UnsupportedType(Exception):
