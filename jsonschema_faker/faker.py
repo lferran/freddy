@@ -1,39 +1,7 @@
-import json
+import copy
 import random
 import string
-from typing import Any, Dict, List, Optional, Union
-
-
-"""
-# Yet todo
-- complete support to basic types (as much as possible)
-- support multiple types
-- support const
-- support definitions/refs
-- regular expressions
-- support number multipleOf
-- support string built-in formats:
-  - date-time
-  - time
-  - date
-  - email
-  - idn-email
-  - hostname
-  - idn-hostname
-  - ipv4
-  - ipv6
-  - uri
-  - uri-reference
-  - iri
-  - iri-reference
-  - json-pointer
-  - relative-json-pointer
-
-# Will not support
-- allOf
-- not
-- conditionals: if, then, else
-"""
+from typing import Any, Callable, Dict, List, Optional, Union
 
 
 class UnsupportedType(Exception):
@@ -51,7 +19,13 @@ class UnsupportedSchema(Exception):
         self.reason = reason
 
 
-def _validate_schema(schema: Dict[str, Any]):
+class InvalidSchema(Exception):
+    def __init__(self, schema, reason: Optional[str] = None):
+        self.schema = schema
+        self.reason = reason
+
+
+def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]]):
     """
     Raise error if schema is not one that we support
     """
@@ -61,25 +35,46 @@ def _validate_schema(schema: Dict[str, Any]):
                 schema, reason=f"{unsupported} key is not supported"
             )
 
+    # Check that reference is present
+    ref = schema.get("$ref")
+    if ref:
+        refname = ref.lstrip("#/definitions/")
+        if not definitions:
+            raise InvalidSchema(schema, reason=f"{refname} not present in definitions")
+
+        if refname not in definitions:
+            raise InvalidSchema(schema, reason=f"{refname} not present in definitions")
+
     _type = schema.get("type")
     enum = schema.get("enum")
-    if not _type and not enum:
+    if not _type and not enum and not ref:
         raise UnsupportedSchema(schema, reason=f"type key is required")
 
 
-def sample(schema: Dict[str, Any]) -> str:
-    return json.dumps(generate(schema))
+def generate(
+    schema: Dict[str, Any], _definitions: Optional[Dict[str, Any]] = None
+) -> Any:
+    # Save copy of input schema if it's first time
+    if _definitions is None:
+        try:
+            _definitions = copy.deepcopy(schema["definitions"])
+        except KeyError:
+            _definitions = None
 
-
-def generate(schema: Dict[str, Any]) -> Any:
-    _validate_schema(schema)
+    _validate_schema(schema, _definitions)
 
     for key in ("anyOf", "oneOf"):
         if key in schema:
-            return generate_of(schema[key])
+            return generate_of(schema[key], _definitions)
 
     if "enum" in schema:
         return generate_enum(schema["enum"])
+
+    if "$ref" in schema:
+        refname = schema["$ref"].lstrip("#/definitions/")
+        refschema = _definitions[refname]  # type: ignore
+        handler = get_definition_generator(refschema)
+        return handler(_definitions)
 
     handlers = {
         "null": lambda s: None,
@@ -93,11 +88,15 @@ def generate(schema: Dict[str, Any]) -> Any:
 
     _type = schema["type"]
     try:
-        handler = handlers[_type]
+        handler = handlers[_type]  # type: ignore
     except KeyError:
         raise UnsupportedType(_type)
 
-    return handler(schema)
+    if _type in ("array", "object"):
+        return handler(schema, _definitions)
+    else:
+        # Basic type
+        return handler(schema)
 
 
 def generate_string(schema: Dict[str, Any]) -> str:
@@ -138,16 +137,23 @@ def generate_enum(choices: List[Any]) -> Any:
     return random.choice(choices)
 
 
-def generate_array(schema: Dict[str, Any]) -> List[Any]:
+def generate_array(
+    schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None
+) -> List[Any]:
     maxitems = schema.get("maxItems", 10)
     minitems = schema.get("minItems", 0)
     items_schema = schema["items"]
-    return [generate(items_schema) for i in range(random.randint(minitems, maxitems))]
+    return [
+        generate(items_schema, _definitions=definitions)
+        for i in range(random.randint(minitems, maxitems))
+    ]
 
 
-def generate_object(schema: Dict[str, Any]) -> Dict[str, Any]:
+def generate_object(
+    schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     return {
-        key: generate(key_schema)
+        key: generate(key_schema, _definitions=definitions)
         for key, key_schema in schema.get("properties", {}).items()
     }
 
@@ -156,5 +162,14 @@ def generate_boolean(schema: Dict[str, Any]) -> bool:
     return random.choice([True, False])
 
 
-def generate_of(schemas: List[Dict[str, Any]]) -> Any:
-    return generate(random.choice(schemas))
+def generate_of(
+    schemas: List[Dict[str, Any]], definitions: Optional[Dict[str, Any]] = None
+) -> Any:
+    return generate(random.choice(schemas), _definitions=definitions)
+
+
+def get_definition_generator(schema: Dict[str, Any]) -> Callable:
+    def new_func(definitions: Optional[Dict[str, Any]] = None):
+        return generate(schema, _definitions=definitions)
+
+    return new_func
