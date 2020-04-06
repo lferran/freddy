@@ -32,13 +32,6 @@ print(jsonschema_faker.generate(schema))
 {'person': {'name': 'nqguo', 'children': [{'name': 'va', 'children': [{'name': 'i', 'children': []}]}, {'name': 'vimkrcjkur', 'children': []}]}}
 ```
 
-## Install
-
-``` shell
-pip install jsonschema-faker
-```
-
-
 ## Development
 
 ``` shell
@@ -64,11 +57,11 @@ pytest tests/
 - [x] object type
 - [x] definitions/references
 - [x] Boolean type
-- [] consts
-- [] string regex
-- [] string built-in formats
-- [] number `multipleOf` keyword
-- [] be able to provide custom basic type factories
+- [ ] consts
+- [ ] string regex
+- [ ] string built-in formats
+- [ ] number `multipleOf` keyword
+- [ ] be able to provide custom basic type factories
 
 ### Does not support:
 
