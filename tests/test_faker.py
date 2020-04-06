@@ -24,9 +24,9 @@ class TestInteger(TestBasicType):
         self.assertIsInstance(self._makeOne({"type": "integer"}), int)
 
     def test_min_max_returns_in_range(self):
-        self.assertEqual(
-            self._makeOne({"type": "integer", "minimum": 9, "maximum": 9}), 9
-        )
+        schema = {"type": "integer", "minimum": 9, "maximum": 9}
+        sample = self._makeOne(schema)
+        self.assertEqual(sample, 9)
         jsonschema.validate(sample, schema)
 
     def test_exclusive_min_max_returns_in_range(self):
@@ -114,9 +114,17 @@ class TestGetDefinitionGenerator(unittest.TestCase):
 
 class TestReferences(TestBasicType):
     def test_array_with_reference(self):
-        schema = {
+        team_schema = {
+            "definitions": {"person": person_schema},
             "type": "array",
-            "maxItems": 2,
+            "minItems": 5,
+            "maxItems": 5,
             "items": {"$ref": "#/definitions/person"},
         }
-        result = self._makeOne(team_schema)
+        team = self._makeOne(team_schema)
+        jsonschema.validate(team, team_schema)
+        for person in team:
+            self.assertIsInstance(person["name"], str)
+            self.assertIsInstance(person["surname"], str)
+            self.assertIsInstance(person["age"], int)
+            self.assertIsInstance(person["has_children"], bool)

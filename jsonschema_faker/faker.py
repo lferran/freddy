@@ -73,14 +73,10 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     if ref:
         refname = ref.lstrip("#/definitions/")
         if not definitions:
-            raise InvalidSchema(
-                input_schema, reason=f"{refname} not present in definitions"
-            )
+            raise InvalidSchema(schema, reason=f"{refname} not present in definitions")
 
         if refname not in definitions:
-            raise InvalidSchema(
-                input_schema, reason=f"{refname} not present in definitions"
-            )
+            raise InvalidSchema(schema, reason=f"{refname} not present in definitions")
 
     _type = schema.get("type")
     enum = schema.get("enum")
@@ -88,7 +84,9 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
         raise UnsupportedSchema(schema, reason=f"type key is required")
 
 
-def generate(schema: Dict[str, Any], _definitions: Optional[Dict[str, Any]]) -> Any:
+def generate(
+    schema: Dict[str, Any], _definitions: Optional[Dict[str, Any]] = None
+) -> Any:
     # Save copy of input schema if it's first time
     if _definitions is None:
         try:
