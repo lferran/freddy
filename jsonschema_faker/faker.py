@@ -105,7 +105,7 @@ def generate(
 
     if "$ref" in schema:
         refname = schema["$ref"].lstrip("#/definitions/")
-        refschema = _definitions[refname]
+        refschema = _definitions[refname]  # type: ignore
         handler = get_definition_generator(refschema)
         return handler(_definitions)
 
@@ -121,7 +121,7 @@ def generate(
 
     _type = schema["type"]
     try:
-        handler = handlers[_type]
+        handler = handlers[_type]  # type: ignore
     except KeyError:
         raise UnsupportedType(_type)
 
