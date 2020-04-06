@@ -27,6 +27,7 @@ class TestInteger(TestBasicType):
         self.assertEqual(
             self._makeOne({"type": "integer", "minimum": 9, "maximum": 9}), 9
         )
+        jsonschema.validate(sample, schema)
 
     def test_exclusive_min_max_returns_in_range(self):
         self.assertEqual(
@@ -67,54 +68,55 @@ class TestString(TestBasicType):
         )
 
 
-def test_dummy():
-    tests = []
-    tests.append({"type": "boolean"})
-    tests.append({"type": "null"})
-    tests.append({"type": "integer", "minimum": 2, "maximum": 7})
-    tests.append({"type": "string", "minLength": 2, "maxLength": 10})
-    tests.append({"type": "string", "enum": ["foo", "bar", "ba"]})
-    tests.append(
-        {
+person_schema = {
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "surname": {"type": "string"},
+        "age": {"type": "integer", "maximum": 100, "minimum": 0},
+        "has_children": {"type": "boolean"},
+    },
+}
+company_schema = {
+    "definitions": {"person": person_schema},
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "ceo": {"$ref": "#/definitions/person"},
+        "cfo": {"$ref": "#/definitions/person"},
+    },
+}
+
+
+class TestGetDefinitionGenerator(unittest.TestCase):
+    def _makeOne(self, schema):
+        return jsonschema_faker.get_definition_generator(schema)
+
+    def test_get_definition_generator_generates_correctly(self):
+        person_generator = self._makeOne(person_schema)
+        person = person_generator()
+        self.assertIsInstance(person["name"], str)
+        self.assertIsInstance(person["surname"], str)
+        self.assertIsInstance(person["age"], int)
+        self.assertIsInstance(person["has_children"], bool)
+
+    def test_nested_definition_generates_correctly(self):
+        person_generator = self._makeOne(company_schema)
+        company = person_generator()
+        self.assertIsInstance(company["name"], str)
+        for boss in ("cfo", "ceo"):
+            self.assertIsInstance(company[boss], dict)
+            self.assertIsInstance(company[boss]["name"], str)
+            self.assertIsInstance(company[boss]["surname"], str)
+            self.assertIsInstance(company[boss]["age"], int)
+            self.assertIsInstance(company[boss]["has_children"], bool)
+
+
+class TestReferences(TestBasicType):
+    def test_array_with_reference(self):
+        schema = {
             "type": "array",
-            "minItems": 1,
-            "maxItems": 10,
-            "items": {"type": "string", "enum": ["hello", "world"]},
+            "maxItems": 2,
+            "items": {"$ref": "#/definitions/person"},
         }
-    )
-    tests.append(
-        {"type": "array", "minItems": 1, "maxItems": 10, "items": {"type": "boolean"}}
-    )
-    tests.append(
-        {
-            "type": "object",
-            "properties": {
-                "name": {"type": "string", "minLength": 3, "maxLength": 10},
-                "age": {"type": "integer", "minimum": 0, "maximum": 110},
-            },
-        }
-    )
-    tests.append(
-        {
-            "type": "object",
-            "properties": {
-                "name": {"type": "string", "minLength": 3, "maxLength": 10},
-                "age": {"type": "integer", "minimum": 0, "maximum": 110},
-                "passed": {"type": "boolean"},
-                "criminal_records": {"type": "null"},
-                "marks": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "subject": {"type": "string"},
-                            "mark": {"type": "number", "maximum": 10, "minimum": 0},
-                        },
-                    },
-                },
-            },
-        }
-    )
-    for schema in tests:
-        sample = jsonschema_faker.generate(schema)
-        jsonschema.validate(sample, schema)
+        result = self._makeOne(team_schema)
