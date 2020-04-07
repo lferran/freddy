@@ -48,7 +48,7 @@ pip install -e .[test]
 pytest tests/
 ```
 
-## Json-schema support
+## JSON Schema support
 
 - [x] boolean type
 - [x] null type
@@ -59,13 +59,13 @@ pytest tests/
 - [x] object type
 - [x] definitions/references
 - [x] Boolean type
-- [ ] consts
+- [x] consts
+- [x] number `multipleOf` keyword
 - [ ] string regex
 - [ ] string built-in formats
-- [ ] number `multipleOf` keyword
 - [ ] be able to provide custom basic type factories
 
-### Does not support:
+Does not support:
 
 - `allOf` and `not` keywords
 - conditional keywords `if`, `then` and `else`

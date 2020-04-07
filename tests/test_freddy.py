@@ -55,6 +55,12 @@ class TestInteger(TestBasicType):
         )
 
 
+class TestConst(TestBasicType):
+    def test_returns_const(self):
+        schema = {"type": "object", "properties": {"hello": {"const": "world"}}}
+        self.assertEqual(self._makeOne(schema), {"hello": "world"})
+
+
 class TestString(TestBasicType):
     def test_returns_string(self):
         self.assertIsInstance(self._makeOne({"type": "string"}), str)
@@ -67,6 +73,27 @@ class TestString(TestBasicType):
             len(self._makeOne({"type": "string", "minLength": 0, "maxLength": 2})),
             [0, 1, 2],
         )
+
+
+class TestNumbers(TestBasicType):
+    def test_returns_float(self):
+        schema = {"type": "number"}
+        self.assertIsInstance(self._makeOne(schema), float)
+
+    def test_min_max_returns_in_length_range(self):
+        schema = {"type": "number", "minimum": 10, "maximum": 20}
+        result = self._makeOne(schema)
+        assert 10 <= result <= 20
+
+    def test_exclusive_min_max_returns_in_range(self):
+        schema = {
+            "type": "number",
+            "minimum": 9,
+            "maximum": 10,
+            "exclusiveMinimum": True,
+        }
+        result = self._makeOne(schema)
+        assert 9 < result <= 10
 
 
 person_schema = {

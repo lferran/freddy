@@ -31,6 +31,9 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
         if refname not in definitions:
             raise InvalidSchema(schema, reason=f"{refname} not present in definitions")
 
+    if schema.get("const"):
+        return
+
     _type = schema.get("type")
     enum = schema.get("enum")
     if not _type and not enum and not ref:
@@ -49,12 +52,15 @@ def generate(
 
     _validate_schema(schema, _definitions)
 
-    for key in ("anyOf", "oneOf"):
-        if key in schema:
-            return generate_of(schema[key], _definitions)
+    if "const" in schema:
+        return schema["const"]
 
     if "enum" in schema:
         return generate_enum(schema["enum"])
+
+    for key in ("anyOf", "oneOf"):
+        if key in schema:
+            return generate_of(schema[key], _definitions)
 
     if "$ref" in schema:
         refname = schema["$ref"].lstrip("#/definitions/")
@@ -112,11 +118,25 @@ def generate_integer(schema: Dict[str, Any]) -> int:
 
 
 def generate_number(schema: Dict[str, Any]) -> Union[int, float]:
-    minimum = schema.get("minimum", 0)
-    maximum = schema.get("maximum", 100)
-    if random.randint(0, 1):
-        return random.randint(minimum, maximum)
-    return random.uniform(minimum, maximum)
+    multiple = schema.get("multipleOf")
+    if multiple:
+        return multiple * random.randint(0, 100)
+    else:
+        # Return float with uniform probability within range
+        minimum = schema.get("minimum", 0)
+        maximum = schema.get("maximum", 1000)
+        # Support exclusive ranges
+        try:
+            if schema["exclusiveMinimum"]:
+                minimum += 1
+        except KeyError:
+            pass
+        try:
+            if schema["exclusiveMaximum"]:
+                maximum -= 1
+        except KeyError:
+            pass
+        return random.uniform(minimum, maximum)
 
 
 def generate_enum(choices: List[Any]) -> Any:
