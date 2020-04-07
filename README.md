@@ -8,6 +8,21 @@ json schema.
 ```python
 from freddy import Freddy
 
+f = Freddy()
+
+f.sample({"type": "string", "maximum": 10})
+'leiod'
+
+f.sample({"type": "string", "maximum": 10})
+'nvf'
+
+f.sample({"type": "array", "maxItems": 5, "items": {"type": "number", "maximum": 20}})
+[14.264744308697502,
+ 2.7715877227063213,
+ 12.641121706942599,
+ 19.39264786907317,
+ 2.3200896382954506]
+
 schema = {
     "definitions": {
         "person": {
@@ -29,23 +44,43 @@ schema = {
     }
 }
 
-f = Freddy()
-print(f.sample(schema))
-{'person': {'name': 'nqguo', 'children': [{'name': 'va', 'children': [{'name': 'i', 'children': []}]}, {'name': 'vimkrcjkur', 'children': []}]}}
+f.sample(schema)
+{'person': {'name': 'uab',
+  'children': [{'name': 'achyjtzwmv', 'children': []},
+   {'name': 'hxazqvg',
+    'children': [{'name': 'bkfvoraihx',
+      'children': [{'name': 'nqshyrwjp',
+        'children': [{'name': 'eyyfttxt', 'children': []},
+         {'name': 'lhxmxj', 'children': []}]}]},
+     {'name': 'elp', 'children': []}]}]}}
+
+
+f.sample(schema)
+{'person': {'name': 'nqguo',
+  'children': [{'name': 'va', 'children': [{'name': 'i', 'children': []}]},
+   {'name': 'vimkrcjkur', 'children': []}]}}
+```
+
+## Install
+
+``` shell
+pip install freddy
 ```
 
 ## Development
 
 ``` shell
+# Clone the repo
 git@github.com:lferran/freddy.git
 cd freddy
+
+# Install pre-commit (optional)
+pip install pre-commit
+pre-commit install
+
+# Run tests
 pip install -e .[test]
-```
-
-## Run tests
-
-```shell
-pytest tests/
+pytest tests
 ```
 
 ## JSON Schema support
