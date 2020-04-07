@@ -22,13 +22,13 @@ jobs:
           pip install flake8 mypy black isort
       - name: Run pre-checks
         run: |
-          flake8 jsonschema_faker --config=setup.cfg
+          flake8 freddy --config=setup.cfg
           flake8 tests --config=setup.cfg
-          mypy jsonschema_faker --ignore-missing-imports
+          mypy freddy --ignore-missing-imports
           mypy tests --ignore-missing-imports
-          isort -c -rc jsonschema_faker
+          isort -c -rc freddy
           isort -c -rc tests
-          black --check --verbose jsonschema_faker
+          black --check --verbose freddy
           black --check --verbose tests
 
   # Job to run tests
