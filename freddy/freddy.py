@@ -3,6 +3,8 @@ import random
 import string
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from xeger import Xeger
+
 
 class UnsupportedType(Exception):
     def __init__(self, _type):
@@ -49,6 +51,12 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     enum = schema.get("enum")
     if not _type and not enum and not ref:
         raise UnsupportedSchema(schema, reason=f"type key is required")
+
+
+STRING_DEFAULT_MAX = 10
+ARRAY_DEFAULT_MAX = 10
+NUMBERS_DEFAULT_MIN = 0
+NUMBERS_DEFAULT_MAX = 100
 
 
 def generate(
@@ -109,8 +117,8 @@ def generate_string(schema: Dict[str, Any]) -> str:
 
 def generate_integer(schema: Dict[str, Any]) -> int:
     # Try getting minimum and maximum
-    minimum = schema.get("minimum", 0)
-    maximum = schema.get("maximum", 100)
+    minimum = schema.get("minimum", NUMBERS_DEFAULT_MIN)
+    maximum = schema.get("maximum", NUMBERS_DEFAULT_MAX)
     # Support exclusives
     try:
         if schema["exclusiveMinimum"]:
@@ -126,8 +134,8 @@ def generate_integer(schema: Dict[str, Any]) -> int:
 
 
 def generate_number(schema: Dict[str, Any]) -> Union[int, float]:
-    minimum = schema.get("minimum", 0)
-    maximum = schema.get("maximum", 100)
+    minimum = schema.get("minimum", NUMBERS_DEFAULT_MIN)
+    maximum = schema.get("maximum", NUMBERS_DEFAULT_MAX)
     if random.randint(0, 1):
         return random.randint(minimum, maximum)
     return random.uniform(minimum, maximum)
@@ -140,7 +148,7 @@ def generate_enum(choices: List[Any]) -> Any:
 def generate_array(
     schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None
 ) -> List[Any]:
-    maxitems = schema.get("maxItems", 10)
+    maxitems = schema.get("maxItems", ARRAY_DEFAULT_MAX)
     minitems = schema.get("minItems", 0)
     items_schema = schema["items"]
     return [

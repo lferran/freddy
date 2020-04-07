@@ -1,12 +1,13 @@
 import unittest
 
+import freddy
 import jsonschema
-import jsonschema_faker
 
 
 class TestBasicType(unittest.TestCase):
     def _makeOne(self, schema):
-        return jsonschema_faker.generate(schema)
+        freddy = freddy.Freddy()
+        return freddy.sample(schema)
 
 
 class TestBoolean(TestBasicType):
@@ -90,7 +91,8 @@ company_schema = {
 
 class TestGetDefinitionGenerator(unittest.TestCase):
     def _makeOne(self, schema):
-        return jsonschema_faker.get_definition_generator(schema)
+        freddy = freddy.Freddy()
+        return freddy.get_definition_generator(schema)
 
     def test_get_definition_generator_generates_correctly(self):
         person_generator = self._makeOne(person_schema)

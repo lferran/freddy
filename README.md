@@ -1,22 +1,23 @@
-# jsonschema-faker
+# freddy
 
-Provides random fake data valid for a given json schema.
+Provides randomized json data (samples) that complies with a given
+json schema.
 
 ## Usage
 
 ```python
-import jsonschema_faker
+from freddy import Freddy
 
 schema = {
     "definitions": {
         "person": {
             "type": "object",
             "properties": {
-                "name": { "type": "string" },
+                "name": {"type": "string"},
                 "children": {
                     "type": "array",
                     "maxItems": 2,
-                    "items": { "$ref": "#/definitions/person" },
+                    "items": {"$ref": "#/definitions/person"},
                     "default": []
                 }
             }
@@ -24,19 +25,20 @@ schema = {
     },
     "type": "object",
     "properties": {
-        "person": { "$ref": "#/definitions/person" }
+        "person": {"$ref": "#/definitions/person"}
     }
 }
 
-print(jsonschema_faker.generate(schema))
+f = Freddy()
+print(f.sample(schema))
 {'person': {'name': 'nqguo', 'children': [{'name': 'va', 'children': [{'name': 'i', 'children': []}]}, {'name': 'vimkrcjkur', 'children': []}]}}
 ```
 
 ## Development
 
 ``` shell
-git@github.com:lferran/jsonschema-faker.git
-cd jsonschema-faker
+git@github.com:lferran/freddy.git
+cd freddy
 pip install -e .[test]
 ```
 
