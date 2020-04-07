@@ -1,12 +1,12 @@
 import unittest
 
-import freddy
 import jsonschema
+from freddy import Freddy, get_definition_generator
 
 
 class TestBasicType(unittest.TestCase):
     def _makeOne(self, schema):
-        freddy = freddy.Freddy()
+        freddy = Freddy()
         return freddy.sample(schema)
 
 
@@ -65,7 +65,7 @@ class TestString(TestBasicType):
         )
         self.assertIn(
             len(self._makeOne({"type": "string", "minLength": 0, "maxLength": 2})),
-            range(0, 2),
+            [0, 1, 2],
         )
 
 
@@ -91,8 +91,7 @@ company_schema = {
 
 class TestGetDefinitionGenerator(unittest.TestCase):
     def _makeOne(self, schema):
-        freddy = freddy.Freddy()
-        return freddy.get_definition_generator(schema)
+        return get_definition_generator(schema)
 
     def test_get_definition_generator_generates_correctly(self):
         person_generator = self._makeOne(person_schema)

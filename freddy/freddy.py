@@ -3,28 +3,12 @@ import random
 import string
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from xeger import Xeger
+from .exceptions import InvalidSchema, UnsupportedSchema, UnsupportedType
 
 
-class UnsupportedType(Exception):
-    def __init__(self, _type):
-        self._type = _type
-
-    @property
-    def type(self):
-        return self._type
-
-
-class UnsupportedSchema(Exception):
-    def __init__(self, schema, reason: Optional[str] = None):
-        self.schema = schema
-        self.reason = reason
-
-
-class InvalidSchema(Exception):
-    def __init__(self, schema, reason: Optional[str] = None):
-        self.schema = schema
-        self.reason = reason
+class Freddy:
+    def sample(self, schema: Dict[str, Any]) -> Any:
+        return generate(schema)
 
 
 def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]]):
@@ -51,12 +35,6 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     enum = schema.get("enum")
     if not _type and not enum and not ref:
         raise UnsupportedSchema(schema, reason=f"type key is required")
-
-
-STRING_DEFAULT_MAX = 10
-ARRAY_DEFAULT_MAX = 10
-NUMBERS_DEFAULT_MIN = 0
-NUMBERS_DEFAULT_MAX = 100
 
 
 def generate(
@@ -107,9 +85,9 @@ def generate(
         return handler(schema)
 
 
-def generate_string(schema: Dict[str, Any]) -> str:
+def generate_string(schema: Dict[str, Any], string_max: int = 10) -> str:
     minlength = schema.get("minLength", 0)
-    maxlength = schema.get("maxLength", 10)
+    maxlength = schema.get("maxLength", string_max)
     length = random.randint(minlength, maxlength)
     letters = string.ascii_lowercase
     return "".join(random.choice(letters) for i in range(length))
@@ -117,9 +95,9 @@ def generate_string(schema: Dict[str, Any]) -> str:
 
 def generate_integer(schema: Dict[str, Any]) -> int:
     # Try getting minimum and maximum
-    minimum = schema.get("minimum", NUMBERS_DEFAULT_MIN)
-    maximum = schema.get("maximum", NUMBERS_DEFAULT_MAX)
-    # Support exclusives
+    minimum = schema.get("minimum", 0)
+    maximum = schema.get("maximum", 100)
+    # Support exclusive ranges
     try:
         if schema["exclusiveMinimum"]:
             minimum += 1
@@ -134,8 +112,8 @@ def generate_integer(schema: Dict[str, Any]) -> int:
 
 
 def generate_number(schema: Dict[str, Any]) -> Union[int, float]:
-    minimum = schema.get("minimum", NUMBERS_DEFAULT_MIN)
-    maximum = schema.get("maximum", NUMBERS_DEFAULT_MAX)
+    minimum = schema.get("minimum", 0)
+    maximum = schema.get("maximum", 100)
     if random.randint(0, 1):
         return random.randint(minimum, maximum)
     return random.uniform(minimum, maximum)
@@ -146,9 +124,9 @@ def generate_enum(choices: List[Any]) -> Any:
 
 
 def generate_array(
-    schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None
+    schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None, array_max=10
 ) -> List[Any]:
-    maxitems = schema.get("maxItems", ARRAY_DEFAULT_MAX)
+    maxitems = schema.get("maxItems", array_max)
     minitems = schema.get("minItems", 0)
     items_schema = schema["items"]
     return [
