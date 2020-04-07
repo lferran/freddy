@@ -18,7 +18,7 @@ setup(
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    url="https://pypi.python.org/pypi/freddy",
+    url="https://github.com/lferran/freddy",
     license="GNU General Public License V3",
     author="Ferran Llamas",
     author_email="llamas.arroniz@gmail.com",
