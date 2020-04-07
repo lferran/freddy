@@ -10,6 +10,8 @@ with open("VERSION", "r") as f:
 setup(
     name="freddy",
     version=VERSION,
+    description="Provides random samples of given json schema",
+    long_description_content_type="text/markdown",
     long_description=open(os.path.join(_dir, "README.md")).read(),
     classifiers=[
         "Programming Language :: Python :: 3.8",
