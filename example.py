@@ -5,6 +5,16 @@ import jsonschema
 import freddy
 
 family_schema = {
+    "type": "array",
+    "minItems": 1,
+    "maxItems": 5,
+    "items": {
+        "properties": {
+            "member": {"$ref": "#/definitions/person"},
+            "role": {"$ref": "#/definitions/role"},
+        },
+        "type": "object",
+    },
     "definitions": {
         "person": {
             "properties": {
@@ -37,17 +47,7 @@ family_schema = {
             ],
             "type": "string",
         },
-    },
-    "items": {
-        "properties": {
-            "person": {"$ref": "#/definitions/person"},
-            "role": {"$ref": "#/definitions/role"},
-        },
-        "type": "object",
-    },
-    "maxItems": 5,
-    "minItems": 1,
-    "type": "array",
+    }
 }
 
 # Get 10 random samples
@@ -59,10 +59,10 @@ for i in range(10):
 
 pprint(sample_family)
 [
-    {"person": {"age": 32, "name": "k", "pets": []}, "role": "grandma"},
-    {"person": {"age": 64, "name": "naifvxf", "pets": []}, "role": "grandpa"},
+    {"member": {"age": 77, "name": "k", "pets": []}, "role": "grandma"},
+    {"member": {"age": 64, "name": "naifvxf", "pets": []}, "role": "grandpa"},
     {
-        "person": {
+        "member": {
             "age": 23,
             "name": "itruydotrj",
             "pets": [{"kind": "cat", "name": "o"}, {"kind": "cat", "name": "uonmvfgd"}],
