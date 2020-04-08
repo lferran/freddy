@@ -113,6 +113,7 @@ pytest tests
 - [x] Boolean type
 - [x] consts
 - [x] number `multipleOf` keyword
+- [ ] additionalProperties
 - [ ] string regex
 - [ ] string built-in formats
 - [ ] be able to provide custom basic type factories
