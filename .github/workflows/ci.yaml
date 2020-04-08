@@ -1,4 +1,4 @@
-name: jsonschema-faker
+name: freddy
 
 on: [push]
 

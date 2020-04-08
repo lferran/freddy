@@ -1,6 +1,7 @@
 import unittest
 
 import jsonschema
+
 import freddy
 from freddy.freddy import get_definition_generator
 
