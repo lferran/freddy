@@ -1,13 +1,7 @@
-# freddy
-
-Provides randomized json data (samples) that complies with a given
-json schema.
-
-## Usage
-
-```python
 from pprint import pprint
+
 import jsonschema
+
 import freddy
 
 family_schema = {
@@ -76,48 +70,3 @@ pprint(sample_family)
         "role": "son",
     },
 ]
-```
-
-## Install
-
-``` shell
-pip install freddy
-```
-
-## Development
-
-``` shell
-# Clone the repo
-git@github.com:lferran/freddy.git
-cd freddy
-
-# Install pre-commit (optional)
-pip install pre-commit
-pre-commit install
-
-# Run tests
-pip install -e .[test]
-pytest tests
-```
-
-## JSON Schema support
-
-- [x] boolean type
-- [x] null type
-- [x] string type
-- [x] number type
-- [x] integer type
-- [x] array type
-- [x] object type
-- [x] definitions/references
-- [x] Boolean type
-- [x] consts
-- [x] number `multipleOf` keyword
-- [ ] string regex
-- [ ] string built-in formats
-- [ ] be able to provide custom basic type factories
-
-Does not support:
-
-- `allOf` and `not` keywords
-- conditional keywords `if`, `then` and `else`

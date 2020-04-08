@@ -1,13 +1,13 @@
 import unittest
 
 import jsonschema
-from freddy import Freddy, get_definition_generator
+import freddy
+from freddy.freddy import get_definition_generator
 
 
 class TestBasicType(unittest.TestCase):
     def _makeOne(self, schema):
-        freddy = Freddy()
-        return freddy.sample(schema)
+        return freddy.jsonschema(schema)
 
 
 class TestBoolean(TestBasicType):

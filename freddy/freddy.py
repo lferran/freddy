@@ -6,9 +6,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from .exceptions import InvalidSchema, UnsupportedSchema, UnsupportedType
 
 
-class Freddy:
-    def sample(self, schema: Dict[str, Any]) -> Any:
-        return generate(schema)
+def jsonschema(schema: Dict[str, Any]) -> Any:
+    return generate(schema)
 
 
 def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]]):
