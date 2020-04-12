@@ -15,21 +15,11 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8.0
+          python-version: 3.8.2
 
-      - name: Install package
-        run: |
-          pip install flake8 mypy black isort==4.3.21
       - name: Run pre-checks
         run: |
-          flake8 freddy --config=setup.cfg
-          flake8 tests --config=setup.cfg
-          mypy freddy --ignore-missing-imports
-          mypy tests --ignore-missing-imports
-          isort -c -rc freddy
-          isort -c -rc tests
-          black --check --verbose freddy
-          black --check --verbose tests
+          make pre-checks
 
   # Job to run tests
   tests:
@@ -37,7 +27,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.8.2]
 
     steps:
       - name: Checkout the repository
@@ -48,10 +38,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install the package
-        run: |
-          pip install -e .[test]
-
       - name: Run tests
         run: |
-          pytest -rfE -s --tb=native -v tests/
+          make tests
