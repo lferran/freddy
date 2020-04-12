@@ -34,3 +34,8 @@ clean:
 	rm -rf venv
 	rm -rf dist
 	rm -rf *.egg-info
+
+snippets: develop
+	venv/bin/pip install ipython
+	venv/bin/pip install aiohttp
+	venv/bin/pip install pdbpp

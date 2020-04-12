@@ -91,13 +91,10 @@ pip install freddy
 git@github.com:lferran/freddy.git
 cd freddy
 
-# Install pre-commit (optional)
-pip install pre-commit
-pre-commit install
+make develop
 
 # Run tests
-pip install -e .[test]
-pytest tests
+make tests
 ```
 
 ## JSON Schema support
