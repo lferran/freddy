@@ -15,11 +15,11 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: 3.8.0
 
       - name: Install package
         run: |
-          pip install flake8 mypy black isort
+          pip install flake8 mypy black isort==4.3.21
       - name: Run pre-checks
         run: |
           flake8 freddy --config=setup.cfg
