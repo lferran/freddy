@@ -54,7 +54,7 @@ async def iterate_store_schemas():
                 continue
 
 
-async def run(arguments):
+async def run():
     results = {"total": 0, "invalid": 0, "success": 0}
     try:
         async for schema in iterate_store_schemas():
@@ -67,6 +67,8 @@ async def run(arguments):
                 kls = ex.__class__.__name__
                 results.setdefault(str(kls), 0)
                 results[str(kls)] += 1
+                continue
+
             try:
                 jsonschema.validate(sample, schema)
             except KeyboardInterrupt:
@@ -83,10 +85,5 @@ async def run(arguments):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Check freddy agains json schema store", add_help=False
-    )
-    parser.add_argument("--schema", default=None)
-    arguments, _ = parser.parse_known_args()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run(arguments))
+    loop.run_until_complete(run())
