@@ -19,6 +19,8 @@ pre-checks: pre-checks-deps
 
 develop: venv
 	venv/bin/pip install -e .[test]
+	venv/bin/pip install pre-commit
+	venv/bin/pre-commit install
 
 tests: venv develop
 	venv/bin/pytest -rfE -s --tb=native -v tests/
