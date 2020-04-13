@@ -7,7 +7,11 @@ from freddy.freddy import get_definition_generator
 
 class TestBasicType(unittest.TestCase):
     def _makeOne(self, schema):
-        return freddy.jsonschema(schema)
+        # Get a sample
+        sample = freddy.jsonschema(schema)
+        # Validate it against schema
+        jsonschema.validate(sample, schema)
+        return sample
 
 
 class TestBoolean(TestBasicType):
@@ -26,38 +30,24 @@ class TestInteger(TestBasicType):
 
     def test_min_max_returns_in_range(self):
         schema = {"type": "integer", "minimum": 9, "maximum": 9}
-        sample = self._makeOne(schema)
-        self.assertEqual(sample, 9)
-        jsonschema.validate(sample, schema)
+        self.assertEqual(self._makeOne(schema), 9)
 
     def test_exclusive_min_max_returns_in_range(self):
         self.assertEqual(
-            self._makeOne(
-                {
-                    "type": "integer",
-                    "minimum": 9,
-                    "maximum": 10,
-                    "exclusiveMinimum": True,
-                }
-            ),
-            10,
+            self._makeOne({"type": "integer", "minimum": 9, "exclusiveMaximum": 10}), 9
         )
         self.assertEqual(
-            self._makeOne(
-                {
-                    "type": "integer",
-                    "minimum": 9,
-                    "maximum": 10,
-                    "exclusiveMaximum": True,
-                }
-            ),
-            9,
+            self._makeOne({"type": "integer", "exclusiveMinimum": 9, "maximum": 10}), 10
         )
 
 
 class TestConst(TestBasicType):
     def test_returns_const(self):
-        schema = {"type": "object", "properties": {"hello": {"const": "world"}}}
+        schema = {
+            "type": "object",
+            "required": ["hello"],
+            "properties": {"hello": {"const": "world"}},
+        }
         self.assertEqual(self._makeOne(schema), {"hello": "world"})
 
 
@@ -86,18 +76,40 @@ class TestNumbers(TestBasicType):
         assert 10 <= result <= 20
 
     def test_exclusive_min_max_returns_in_range(self):
-        schema = {
-            "type": "number",
-            "minimum": 9,
-            "maximum": 10,
-            "exclusiveMinimum": True,
-        }
+        schema = {"type": "number", "exclusiveMinimum": 9, "maximum": 10}
         result = self._makeOne(schema)
         assert 9 < result <= 10
 
 
+class TestEnum(TestBasicType):
+    def test_string_enum(self):
+        enum = ["foo", "bar", "ba"]
+        schema = {"type": "string", "enum": enum}
+        self.assertIsInstance(self._makeOne(schema), str)
+        self.assertIn(self._makeOne(schema), enum)
+
+    def test_number_enum(self):
+        enum = [1, 1.2, 3.3]
+        schema = {"type": "number", "enum": enum}
+        self.assertIn(type(self._makeOne(schema)), [float, int])
+        self.assertIn(self._makeOne(schema), enum)
+
+
+class TestObject(TestBasicType):
+    def test_required(self):
+        schema = {
+            "type": "object",
+            "required": ["bar"],
+            "properties": {"foo": {"type": "string"}, "bar": {"type": "number"}},
+        }
+        sample = self._makeOne(schema)
+        self.assertIsInstance(sample, dict)
+        self.assertIn("bar", sample)
+
+
 person_schema = {
     "type": "object",
+    "required": ["name", "surname", "age", "has_children"],
     "properties": {
         "name": {"type": "string"},
         "surname": {"type": "string"},
@@ -105,9 +117,11 @@ person_schema = {
         "has_children": {"type": "boolean"},
     },
 }
+
 company_schema = {
     "definitions": {"person": person_schema},
     "type": "object",
+    "required": ["name", "ceo", "cfo"],
     "properties": {
         "name": {"type": "string"},
         "ceo": {"$ref": "#/definitions/person"},
@@ -116,21 +130,16 @@ company_schema = {
 }
 
 
-class TestGetDefinitionGenerator(unittest.TestCase):
-    def _makeOne(self, schema):
-        return get_definition_generator(schema)
-
+class TestGetDefinitionGenerator(TestBasicType):
     def test_get_definition_generator_generates_correctly(self):
-        person_generator = self._makeOne(person_schema)
-        person = person_generator()
+        person = self._makeOne(person_schema)
         self.assertIsInstance(person["name"], str)
         self.assertIsInstance(person["surname"], str)
         self.assertIsInstance(person["age"], int)
         self.assertIsInstance(person["has_children"], bool)
 
     def test_nested_definition_generates_correctly(self):
-        person_generator = self._makeOne(company_schema)
-        company = person_generator()
+        company = self._makeOne(company_schema)
         self.assertIsInstance(company["name"], str)
         for boss in ("cfo", "ceo"):
             self.assertIsInstance(company[boss], dict)
@@ -150,7 +159,6 @@ class TestReferences(TestBasicType):
             "items": {"$ref": "#/definitions/person"},
         }
         team = self._makeOne(team_schema)
-        jsonschema.validate(team, team_schema)
         for person in team:
             self.assertIsInstance(person["name"], str)
             self.assertIsInstance(person["surname"], str)

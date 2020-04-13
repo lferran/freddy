@@ -99,6 +99,8 @@ make tests
 
 ## JSON Schema support
 
+Conforms to JSON Schema Draft 7. The following features are supported:
+
 - [x] boolean type
 - [x] null type
 - [x] string type
@@ -109,6 +111,8 @@ make tests
 - [x] definitions/references
 - [x] Boolean type
 - [x] consts
+- [x] `exclusiveMinimum` and `exclusiveMaximum` in integers and
+      numbers.
 - [x] number `multipleOf` keyword
 
 - [ ] `required` keyword

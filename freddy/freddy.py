@@ -1,7 +1,7 @@
 import copy
 import random
 import string
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from .exceptions import InvalidSchema, UnsupportedSchema, UnsupportedType
 
@@ -99,21 +99,27 @@ def generate_string(schema: Dict[str, Any], string_max: int = 10) -> str:
 
 
 def generate_integer(schema: Dict[str, Any]) -> int:
-    # Try getting minimum and maximum
+    maximum, minimum = get_max_and_min(schema)
+    return random.randint(minimum, maximum)
+
+
+def get_max_and_min(
+    schema: Dict[str, Any]
+) -> Tuple[Union[int, float], Union[int, float]]:
     minimum = schema.get("minimum", 0)
-    maximum = schema.get("maximum", 100)
+    maximum = schema.get("maximum", 1000)
     # Support exclusive ranges
     try:
-        if schema["exclusiveMinimum"]:
-            minimum += 1
+        if schema["exclusiveMinimum"] is not None:
+            minimum = schema["exclusiveMinimum"] + 1
     except KeyError:
         pass
     try:
-        if schema["exclusiveMaximum"]:
-            maximum -= 1
+        if schema["exclusiveMaximum"] is not None:
+            maximum = schema["exclusiveMaximum"] - 1
     except KeyError:
         pass
-    return random.randint(minimum, maximum)
+    return maximum, minimum
 
 
 def generate_number(schema: Dict[str, Any]) -> Union[int, float]:
@@ -121,20 +127,7 @@ def generate_number(schema: Dict[str, Any]) -> Union[int, float]:
     if multiple:
         return multiple * random.randint(0, 100)
     else:
-        # Return float with uniform probability within range
-        minimum = schema.get("minimum", 0)
-        maximum = schema.get("maximum", 1000)
-        # Support exclusive ranges
-        try:
-            if schema["exclusiveMinimum"]:
-                minimum += 1
-        except KeyError:
-            pass
-        try:
-            if schema["exclusiveMaximum"]:
-                maximum -= 1
-        except KeyError:
-            pass
+        maximum, minimum = get_max_and_min(schema)
         return random.uniform(minimum, maximum)
 
 
@@ -161,9 +154,16 @@ def generate_array(
 def generate_object(
     schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
+    try:
+        required_keys = schema["required"]
+    except KeyError:
+        required_keys = []
+
+    # Include all required keys and flip a coin for all others
     return {
         key: generate(key_schema, _definitions=definitions)
         for key, key_schema in schema.get("properties", {}).items()
+        if (required_keys and key in required_keys) or random.choice([True, False])
     }
 
 

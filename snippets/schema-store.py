@@ -81,7 +81,7 @@ async def load_schemas():
     return all_schemas
 
 
-async def check_schemas(all_schemas):
+def check_schemas(all_schemas):
     results = {"total": 0, "invalid": [], "success": 0}
     try:
         for schema in all_schemas:
@@ -113,7 +113,7 @@ async def check_schemas(all_schemas):
 
 async def run():
     all_schemas = await load_schemas()
-    results = await check_schemas(all_schemas)
+    results = check_schemas(all_schemas)
 
     print("#" * 30)
     print(f"Total: {results.pop('total')}")
