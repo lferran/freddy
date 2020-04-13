@@ -14,7 +14,7 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     """
     Raise error if schema is not one that we support
     """
-    for unsupported in ("allOf", "not", "if", "then", "else", "multipleOf"):
+    for unsupported in ("allOf", "not", "if", "then", "else", "multipleOf", "pattern"):
         if unsupported in schema:
             raise UnsupportedSchema(
                 schema, reason=f"{unsupported} key is not supported"
@@ -23,11 +23,8 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     # Check that reference is present
     ref = schema.get("$ref")
     if ref:
-        refname = ref.lstrip("#/definitions/")
-        if not definitions:
-            raise InvalidSchema(schema, reason=f"{refname} not present in definitions")
-
-        if refname not in definitions:
+        refname = ref.split("#/definitions/")[-1]
+        if not definitions or refname not in definitions:
             raise InvalidSchema(schema, reason=f"{refname} not present in definitions")
 
     if schema.get("const"):
@@ -37,6 +34,9 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     enum = schema.get("enum")
     if not _type and not enum and not ref:
         raise UnsupportedSchema(schema, reason=f"type key is required")
+
+    if isinstance(_type, list) and len(_type) > 1:
+        raise UnsupportedSchema(schema, reason=f"multiple types not supported yet")
 
 
 def generate(
@@ -62,7 +62,7 @@ def generate(
             return generate_of(schema[key], _definitions)
 
     if "$ref" in schema:
-        refname = schema["$ref"].lstrip("#/definitions/")
+        refname = schema["$ref"].split("#/definitions/")[-1]
         refschema = _definitions[refname]  # type: ignore
         handler = get_definition_generator(refschema)
         return handler(_definitions)
@@ -147,7 +147,11 @@ def generate_array(
 ) -> List[Any]:
     maxitems = schema.get("maxItems", array_max)
     minitems = schema.get("minItems", 0)
-    items_schema = schema["items"]
+    try:
+        items_schema = schema["items"]
+    except KeyError:
+        # Assume items are string if schema not provided
+        items_schema = {"type": "string"}
     return [
         generate(items_schema, _definitions=definitions)
         for i in range(random.randint(minitems, maxitems))

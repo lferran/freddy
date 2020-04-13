@@ -110,12 +110,17 @@ make tests
 - [x] Boolean type
 - [x] consts
 - [x] number `multipleOf` keyword
-- [ ] additionalProperties
-- [ ] string regex
+
+- [ ] `required` keyword
+- [ ] `additionalProperties`
+- [ ] string `pattern` regex keyword
 - [ ] string built-in formats
 - [ ] be able to provide custom basic type factories
+- [ ] multiple types: `{"type": ["string", "array"]}`
+- [ ] look into `allOf`: generate multiple objects + merge
 
 Does not support:
 
+- ID referencing
 - `allOf` and `not` keywords
 - conditional keywords `if`, `then` and `else`

@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import json
 import traceback
@@ -6,6 +5,35 @@ import traceback
 import aiohttp
 import freddy
 import jsonschema
+
+
+async def get_schema(session, url):
+    async with session.get(url) as resp:
+        if resp.status == 404:
+            return None
+
+        if resp.status != 200:
+            print(f"Skipping {url}: {resp.status} {resp.reason}")
+            return None
+
+        # Attempt to parse response content
+        try:
+            content_type = resp.content_type
+            if content_type == "text/plain":
+                content = await resp.text()
+                return json.loads(content)
+
+            elif content_type in ("application/json", "application/octet-stream"):
+                content = await resp.content.read()
+                return json.loads(content)
+
+            else:
+                print(f"Skipping {url}: unknown content type: {content_type}")
+                return None
+
+        except Exception:
+            print(f"Skipping {url}: {traceback.print_exc()}")
+            return None
 
 
 async def iterate_store_schemas():
@@ -16,37 +44,12 @@ async def iterate_store_schemas():
                 raise Exception("Could not get json store url")
             catalog = await resp.json()
 
-        for schema in catalog["schemas"]:
-            url = schema["url"]
+        for schema_metadata in catalog["schemas"]:
+            url = schema_metadata["url"]
             try:
-                async with session.get(url) as resp:
-                    if resp.status == 404:
-                        # Not found anymore
-                        continue
-                    if resp.status != 200:
-                        print(f"Skipping {url}: {resp.status} {resp.reason}")
-                        continue
-                    try:
-                        content_type = resp.content_type
-                        if content_type == "text/plain":
-                            content = await resp.text()
-                            yield json.loads(content)
-                        elif content_type in (
-                            "application/json",
-                            "application/octet-stream",
-                        ):
-                            content = await resp.content.read()
-                            yield json.loads(content)
-                        else:
-                            print(
-                                f"Skipping {url}: unknown content type: {content_type}"
-                            )
-                            continue
-                    except KeyboardInterrupt:
-                        raise
-                    except Exception:
-                        print(f"Skipping {url}: {traceback.print_exc()}")
-                        continue
+                json_schema = await get_schema(session, url)
+                if json_schema is not None:
+                    yield json_schema
             except KeyboardInterrupt:
                 raise
             except Exception:
@@ -54,34 +57,73 @@ async def iterate_store_schemas():
                 continue
 
 
-async def run():
-    results = {"total": 0, "invalid": 0, "success": 0}
+def get_from_file():
     try:
-        async for schema in iterate_store_schemas():
+        with open("snippets/store.json", "r") as f:
+            return json.loads(f.read())
+    except FileNotFoundError:
+        return None
+    except Exception:
+        print("Error getting from file")
+        return None
+
+
+def store_in_file(results):
+    with open("snippets/store.json", "w") as f:
+        f.write(json.dumps(results))
+
+
+async def load_schemas():
+    all_schemas = get_from_file()
+    if all_schemas is None:
+        all_schemas = [s async for s in iterate_store_schemas()]
+        store_in_file(all_schemas)
+    return all_schemas
+
+
+async def check_schemas(all_schemas):
+    results = {"total": 0, "invalid": [], "success": 0}
+    try:
+        for schema in all_schemas:
             results["total"] += 1
+            # Try to generate a sample
             try:
                 sample = freddy.jsonschema(schema)
             except KeyboardInterrupt:
                 raise
             except Exception as ex:
                 kls = ex.__class__.__name__
-                results.setdefault(str(kls), 0)
-                results[str(kls)] += 1
+                results.setdefault(str(kls), [])
+                results[str(kls)].append(schema)
                 continue
-
+            # Try to validate sample against schema
             try:
                 jsonschema.validate(sample, schema)
             except KeyboardInterrupt:
                 raise
             except Exception:
-                results["invalid"] += 1
+                results["invalid"].append(schema)
             else:
                 results["success"] += 1
-        print(results)
-
     except KeyboardInterrupt:
         print("Halted")
-        print(results)
+    finally:
+        return results
+
+
+async def run():
+    all_schemas = await load_schemas()
+    results = await check_schemas(all_schemas)
+
+    print("#" * 30)
+    print(f"Total: {results.pop('total')}")
+    print(f"Success: {results.pop('success')}")
+    for err, v in results.items():
+        print(f"{err}: {len(v)}")
+    print("#" * 30)
+
+    for sch in results["InvalidSchema"]:
+        freddy.jsonschema(sch)
 
 
 if __name__ == "__main__":
