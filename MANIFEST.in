@@ -1,0 +1,8 @@
+include *.py
+include *.rst
+include *.yaml
+include LICENSE
+include Makefile
+include VERSION
+recursive-include snippets *.py
+recursive-include tests *.py
