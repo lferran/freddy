@@ -128,3 +128,5 @@ Does not support:
 - ID referencing
 - `allOf` and `not` keywords
 - conditional keywords `if`, `then` and `else`
+- `patternProperties` on objects
+- property and schema `dependencies` on objects.

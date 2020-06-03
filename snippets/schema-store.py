@@ -122,8 +122,12 @@ async def run():
         print(f"{err}: {len(v)}")
     print("#" * 30)
 
-    for sch in results["InvalidSchema"]:
-        freddy.jsonschema(sch)
+    for sch in results["invalid"]:
+        sample = freddy.jsonschema(sch)
+        import pdb
+
+        pdb.set_trace()
+        jsonschema.validate(instance=sample, schema=sch)
 
 
 if __name__ == "__main__":

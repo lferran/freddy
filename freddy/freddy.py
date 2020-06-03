@@ -14,7 +14,20 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     """
     Raise error if schema is not one that we support
     """
-    for unsupported in ("allOf", "not", "if", "then", "else", "multipleOf", "pattern"):
+    for unsupported in (
+        "allOf",
+        "not",
+        "if",
+        "then",
+        "else",
+        "multipleOf",
+        "pattern",
+        "format",
+        "patternProperties",
+        "dependencies",
+        "maxProperties",
+        "minProperties",
+    ):
         if unsupported in schema:
             raise UnsupportedSchema(
                 schema, reason=f"{unsupported} key is not supported"
@@ -57,9 +70,11 @@ def generate(
     if "enum" in schema:
         return generate_enum(schema["enum"])
 
-    for key in ("anyOf", "oneOf"):
-        if key in schema:
-            return generate_of(schema[key], _definitions)
+    if "oneOf" in schema:
+        return generate_of(schema["oneOf"], _definitions)
+
+    if "anyOf" in schema:
+        return generate_of(schema["anyOf"], _definitions)
 
     if "$ref" in schema:
         refname = schema["$ref"].split("#/definitions/")[-1]
@@ -145,10 +160,21 @@ def generate_array(
     except KeyError:
         # Assume items are string if schema not provided
         items_schema = {"type": "string"}
-    return [
-        generate(items_schema, _definitions=definitions)
-        for i in range(random.randint(minitems, maxitems))
-    ]
+
+    try:
+        unique_items = schema["uniqueItems"]
+    except KeyError:
+        unique_items = False
+
+    result_len = random.randint(minitems, maxitems)
+    result = []
+    while len(result) < result_len:
+        item = generate(items_schema, _definitions=definitions)
+        if unique_items and item in result:
+            # skip duplicate
+            continue
+        result.append(item)
+    return result
 
 
 def generate_object(
