@@ -1,10 +1,12 @@
 import os
 
-from setuptools import setup
+from setuptools import find_packages, setup
+
+path_join = os.path.join
 
 _dir = os.path.dirname(os.path.realpath(__file__))
 
-with open("VERSION", "r") as f:
+with open(path_join(_dir, "VERSION"), "r") as f:
     VERSION = f.read().strip("\n")
 
 setup(
@@ -12,7 +14,7 @@ setup(
     version=VERSION,
     description="Provides random samples of given json schema",
     long_description_content_type="text/markdown",
-    long_description=open(os.path.join(_dir, "README.md")).read(),
+    long_description=open(path_join(_dir, "README.md")).read(),
     classifiers=[
         "Programming Language :: Python :: 3.8",
         "Intended Audience :: Developers",
@@ -25,7 +27,7 @@ setup(
     keywords=[],
     zip_safe=True,
     include_package_data=True,
-    packages=["freddy"],
+    packages=find_packages(exclude=["ez_setup"]),
     install_requires=[],
     extras_require={"test": ["pytest", "jsonschema"]},
 )

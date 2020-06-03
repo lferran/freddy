@@ -1,2 +1,5 @@
+include *.rst
 include VERSION
-include CHANGELOG.rst
+include *.conf
+include *.yaml
+include *.md
