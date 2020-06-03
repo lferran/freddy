@@ -25,10 +25,10 @@ develop: venv
 tests: venv develop
 	venv/bin/pytest -rfE -s --tb=native -v tests/
 
-package:
+package: venv
 	venv/bin/python setup.py sdist
 	venv/bin/pip install twine
-	venv/bin/twine upload dist/
+	venv/bin/twine upload dist/*
 
 clean:
 	rm -rf venv
