@@ -46,10 +46,10 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
     _type = schema.get("type")
     enum = schema.get("enum")
     if not _type and not enum and not ref:
-        raise UnsupportedSchema(schema, reason=f"type key is required")
+        raise UnsupportedSchema(schema, reason="type key is required")
 
     if isinstance(_type, list) and len(_type) > 1:
-        raise UnsupportedSchema(schema, reason=f"multiple types not supported yet")
+        raise UnsupportedSchema(schema, reason="multiple types not supported yet")
 
 
 def generate(
