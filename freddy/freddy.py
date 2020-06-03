@@ -115,7 +115,7 @@ def generate_string(schema: Dict[str, Any], string_max: int = 10) -> str:
 
 def generate_integer(schema: Dict[str, Any]) -> int:
     maximum, minimum = get_max_and_min(schema)
-    return random.randint(minimum, maximum)
+    return random.randint(int(minimum), int(maximum))
 
 
 def get_max_and_min(
@@ -167,7 +167,7 @@ def generate_array(
         unique_items = False
 
     result_len = random.randint(minitems, maxitems)
-    result = []
+    result: List[Any] = []
     while len(result) < result_len:
         item = generate(items_schema, _definitions=definitions)
         if unique_items and item in result:
