@@ -1,4 +1,5 @@
 import copy
+import datetime
 import random
 import string
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -26,7 +27,6 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
         "else",
         "multipleOf",
         "pattern",
-        "format",
         "patternProperties",
         "dependencies",
         "maxProperties",
@@ -110,11 +110,33 @@ def generate(
 
 
 def generate_string(schema: Dict[str, Any], string_max: int = 10) -> str:
-    minlength = schema.get("minLength", 0)
-    maxlength = schema.get("maxLength", string_max)
-    length = random.randint(minlength, maxlength)
-    letters = string.ascii_lowercase
-    return "".join(random.choice(letters) for i in range(length))
+    _format = schema.get("format")
+    supported_formats = ("date-time", "date", "time")
+    if not _format or _format not in supported_formats:
+        minlength = schema.get("minLength", 0)
+        maxlength = schema.get("maxLength", string_max)
+        length = random.randint(minlength, maxlength)
+        letters = string.ascii_lowercase
+        return "".join(random.choice(letters) for i in range(length))
+
+    # date-time format
+    if _format in ("date-time", "date", "time"):
+        start_datetime = datetime.datetime(
+            1900, 1, 1, random.randint(0, 24), random.randint(0, 60)
+        )
+        end_datetime = datetime.datetime(2050, 1, 1)
+        time_between_dates = end_datetime - start_datetime
+        days_between_dates = time_between_dates.days
+        random_number_of_days = random.randrange(days_between_dates)
+        random_datetime = start_datetime + datetime.timedelta(
+            days=random_number_of_days
+        )
+        if _format == "date-time":
+            return random_datetime.isoformat()
+        elif _format == "date":
+            return random_datetime.date().isoformat()
+        else:  # time
+            return random_datetime.time().isoformat()
 
 
 def generate_integer(schema: Dict[str, Any]) -> int:
