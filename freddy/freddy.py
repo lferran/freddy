@@ -11,7 +11,7 @@ def jsonschema(schema: Dict[str, Any]) -> Any:
     return generate(schema)
 
 
-def pydantic(model: "pydantic.BaseModel") -> Any:
+def pydantic(model) -> Any:
     return generate(model.schema())
 
 

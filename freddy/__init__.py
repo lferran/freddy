@@ -5,7 +5,7 @@ from .freddy import jsonschema  # noqa
 from .freddy import pydantic  # noqa
 
 
-def sample(_input: Union["pydantic.BaseModel", Dict[str, Any]]) -> Any:
+def sample(_input) -> Any:
     if isinstance(_input, dict):
         return jsonschema(_input)
     return pydantic(_input)
