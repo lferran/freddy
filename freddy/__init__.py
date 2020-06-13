@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any
 
 from .exceptions import *  # noqa
 from .freddy import jsonschema  # noqa
