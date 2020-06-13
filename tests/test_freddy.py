@@ -1,7 +1,9 @@
 import unittest
+from typing import List, Optional
 
 import freddy
 import jsonschema
+import pydantic
 
 
 class TestBasicType(unittest.TestCase):
@@ -163,3 +165,25 @@ class TestReferences(TestBasicType):
             self.assertIsInstance(person["surname"], str)
             self.assertIsInstance(person["age"], int)
             self.assertIsInstance(person["has_children"], bool)
+
+
+class Person(pydantic.BaseModel):
+    name: str
+    surname: str
+    age: int
+    has_children: bool
+    pet_count: Optional[int] = 0
+
+
+class TestPydanticModel(unittest.TestCase):
+    def _makeOne(self, model):
+        return freddy.pydantic(model)
+
+    def test_a_pydantic_model(self):
+        person = self._makeOne(Person)
+        self.assertIsInstance(person["name"], str)
+        self.assertIsInstance(person["surname"], str)
+        self.assertIsInstance(person["age"], int)
+        self.assertIsInstance(person["has_children"], bool)
+        if "pet_count" in person:
+            self.assertIsInstance(person["pet_count"], int)

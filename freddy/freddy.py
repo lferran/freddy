@@ -10,6 +10,10 @@ def jsonschema(schema: Dict[str, Any]) -> Any:
     return generate(schema)
 
 
+def pydantic(model: "pydantic.BaseModel") -> Any:
+    return generate(model.schema())
+
+
 def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]]):
     """
     Raise error if schema is not one that we support
