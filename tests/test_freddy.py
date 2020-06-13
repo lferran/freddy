@@ -173,6 +173,7 @@ class Person(pydantic.BaseModel):
     age: int
     has_children: bool
     pet_count: Optional[int] = 0
+    nicknames: List[str]
 
 
 class TestPydanticModel(unittest.TestCase):
@@ -185,5 +186,8 @@ class TestPydanticModel(unittest.TestCase):
         self.assertIsInstance(person["surname"], str)
         self.assertIsInstance(person["age"], int)
         self.assertIsInstance(person["has_children"], bool)
+        self.assertIsInstance(person["nicknames"], list)
+        for n in person["nicknames"]:
+            self.assertIsInstance(n, str)
         if "pet_count" in person:
             self.assertIsInstance(person["pet_count"], int)
