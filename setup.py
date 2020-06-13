@@ -29,5 +29,5 @@ setup(
     include_package_data=True,
     packages=find_packages(exclude=["ez_setup"]),
     install_requires=[],
-    extras_require={"test": ["pytest", "jsonschema"]},
+    extras_require={"test": ["pytest", "jsonschema", "pydantic"]},
 )

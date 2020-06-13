@@ -1,10 +1,34 @@
 # freddy
 
 Provides randomized json data (samples) that complies with a given
-json schema.
+schema.
+
+Works both for json schema and pydantic models.
 
 ## Usage
 
+### pydantic
+```python
+from pprint import pprint
+from datetime import datetime
+from typing import List, Optional
+from pydantic import BaseModel
+import freddy
+
+
+class User(BaseModel):
+    id: int
+    name = 'John Doe'
+    signup_ts: Optional[datetime] = None
+    friends: List[int] = []
+
+
+sample = freddy.sample(User)
+pprint(sample)
+{'friends': [717, 235, 439, 589], 'id': 565, 'signup_ts': '1907-06-22T18:01:00'}
+```
+
+### jsonschema
 ```python
 from pprint import pprint
 import jsonschema
@@ -58,7 +82,7 @@ family_schema = {
 
 # Get 10 random samples
 for i in range(10):
-    sample_family = freddy.jsonschema(family_schema)
+    sample_family = freddy.sample(family_schema)
 
     # Validate against schema
     jsonschema.validate(sample_family, family_schema)
@@ -118,7 +142,7 @@ Conforms to JSON Schema Draft 7. The following features are supported:
 - [ ] `required` keyword
 - [ ] `additionalProperties`
 - [ ] string `pattern` regex keyword
-- [ ] string built-in formats
+- [ ] all string built-in formats
 - [ ] be able to provide custom basic type factories
 - [ ] multiple types: `{"type": ["string", "array"]}`
 - [ ] look into `allOf`: generate multiple objects + merge
