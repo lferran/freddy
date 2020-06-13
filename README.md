@@ -82,7 +82,7 @@ family_schema = {
 
 # Get 10 random samples
 for i in range(10):
-    sample_family = freddy.jsonschema(family_schema)
+    sample_family = freddy.sample(family_schema)
 
     # Validate against schema
     jsonschema.validate(sample_family, family_schema)
