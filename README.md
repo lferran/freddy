@@ -26,6 +26,8 @@ class User(BaseModel):
 sample = freddy.sample(User)
 pprint(sample)
 {'friends': [717, 235, 439, 589], 'id': 565, 'signup_ts': '1907-06-22T18:01:00'}
+User.validate(sample)
+User(id=565, signup_ts=datetime.datetime(1907, 6, 22, 18, 1), friends=[717, 235, 439, 589], name='John Doe')
 ```
 
 ### jsonschema
