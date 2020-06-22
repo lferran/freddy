@@ -195,7 +195,7 @@ class TestPydanticModel(unittest.TestCase):
 
 
 class Test_oneOf(TestBasicType):
-    def test_number_enum(self):
+    def test_schema_with_oneOf_at_top_level(self):
         schema = {
             "oneOf": [
                 {"type": "array", "minItems": 20, "items": {"type": "number"}},
@@ -209,9 +209,11 @@ class Test_oneOf(TestBasicType):
         sample = self._makeOne(schema)
         if isinstance(sample, dict):
             self.assertIsInstance(sample["foo"], str)
-        if isinstance(sample, list):
+        elif isinstance(sample, list):
             for item in sample:
                 self.assertIn(type(item), [int, float])
+        else:
+            raise Exception("something went wrong")
 
 
 class Test_validate_schema(unittest.TestCase):

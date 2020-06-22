@@ -184,8 +184,8 @@ def generate_enum(choices: List[Any]) -> Any:
 def generate_array(
     schema: Dict[str, Any], definitions: Definitions = None, array_max=10
 ) -> List[Any]:
-    maxitems = schema.get("maxItems", array_max)
     minitems = schema.get("minItems", 0)
+    maxitems = schema.get("maxItems", array_max + minItems)
     try:
         items_schema = schema["items"]
     except KeyError:
