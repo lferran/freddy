@@ -185,7 +185,7 @@ def generate_array(
     schema: Dict[str, Any], definitions: Definitions = None, array_max=10
 ) -> List[Any]:
     minitems = schema.get("minItems", 0)
-    maxitems = schema.get("maxItems", array_max + minItems)
+    maxitems = schema.get("maxItems", array_max + minitems)
     try:
         items_schema = schema["items"]
     except KeyError:
