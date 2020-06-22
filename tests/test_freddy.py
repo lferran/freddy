@@ -4,6 +4,7 @@ from typing import List, Optional
 import freddy
 import jsonschema
 import pydantic
+import pytest
 
 
 class TestBasicType(unittest.TestCase):
@@ -191,3 +192,54 @@ class TestPydanticModel(unittest.TestCase):
             self.assertIsInstance(n, str)
         if "pet_count" in person:
             self.assertIsInstance(person["pet_count"], int)
+
+
+class Test_oneOf(TestBasicType):
+    def test_number_enum(self):
+        schema = {
+            "oneOf": [
+                {"type": "array", "minItems": 20, "items": {"type": "number"}},
+                {
+                    "type": "object",
+                    "required": ["foo"],
+                    "properties": {"foo": {"type": "string", "minLength": 2}},
+                },
+            ]
+        }
+        sample = self._makeOne(schema)
+        if isinstance(sample, dict):
+            self.assertIsInstance(sample["foo"], str)
+        if isinstance(sample, list):
+            for item in sample:
+                self.assertIn(type(item), [int, float])
+
+
+class Test_validate_schema(unittest.TestCase):
+    def makeOne(self, *args, **kwargs):
+        from freddy.freddy import _validate_schema
+
+        _validate_schema(*args, **kwargs)
+
+    def test_unsupported_json_schema_keys_raises_exception(self):
+        from freddy.freddy import _unsupported_jsonschema_keys
+
+        for jsonschema_key in _unsupported_jsonschema_keys:
+            with pytest.raises(freddy.UnsupportedSchema) as ex:
+                self.makeOne({jsonschema_key: "foobar"})
+            self.assertEqual(ex.value.reason, f"{jsonschema_key} key is not supported")
+
+    def test_multiple_types_not_supported(self):
+        with pytest.raises(freddy.UnsupportedSchema) as ex:
+            self.makeOne({"type": ["string", "number"]})
+        self.assertEqual(ex.value.reason, "multiple types not supported yet")
+
+    def test_definition_not_found(self):
+        refname = "foobar"
+        with pytest.raises(freddy.InvalidSchema) as ex:
+            self.makeOne({"definitions": {}, "$ref": f"#/definitions/{refname}"})
+        self.assertEqual(ex.value.reason, f"{refname} not present in definitions")
+
+    def test_nor_ref_nor_type_nor_enum_nor_const(self):
+        with pytest.raises(freddy.UnsupportedSchema) as ex:
+            self.makeOne({})
+        self.assertEqual(ex.value.reason, "type key is required")
