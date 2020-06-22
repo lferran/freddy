@@ -2,9 +2,10 @@ import copy
 import datetime
 import random
 import string
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 from .exceptions import InvalidSchema, UnsupportedSchema, UnsupportedType
+from .types import Definitions
 
 
 def jsonschema(schema: Dict[str, Any]) -> Any:
@@ -15,27 +16,34 @@ def pydantic(model) -> Any:
     return generate(model.schema())
 
 
-def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]]):
+_unsupported_jsonschema_keys = (
+    "allOf",
+    "not",
+    "if",
+    "then",
+    "else",
+    "multipleOf",
+    "pattern",
+    "patternProperties",
+    "dependencies",
+    "maxProperties",
+    "minProperties",
+)
+
+
+def _validate_schema(schema: Dict[str, Any], definitions: Definitions = None):
     """
     Raise error if schema is not one that we support
     """
-    for unsupported in (
-        "allOf",
-        "not",
-        "if",
-        "then",
-        "else",
-        "multipleOf",
-        "pattern",
-        "patternProperties",
-        "dependencies",
-        "maxProperties",
-        "minProperties",
-    ):
+    for unsupported in _unsupported_jsonschema_keys:
         if unsupported in schema:
             raise UnsupportedSchema(
                 schema, reason=f"{unsupported} key is not supported"
             )
+
+    if "oneOf" in schema or "anyOf" in schema:
+        # Inner schema definitions will be validated recursively
+        return
 
     # Check that reference is present
     ref = schema.get("$ref")
@@ -56,9 +64,7 @@ def _validate_schema(schema: Dict[str, Any], definitions=Optional[Dict[str, Any]
         raise UnsupportedSchema(schema, reason="multiple types not supported yet")
 
 
-def generate(
-    schema: Dict[str, Any], _definitions: Optional[Dict[str, Any]] = None
-) -> Any:
+def generate(schema: Dict[str, Any], _definitions: Definitions = None) -> Any:
     # Save copy of input schema if it's first time
     if _definitions is None:
         try:
@@ -176,10 +182,10 @@ def generate_enum(choices: List[Any]) -> Any:
 
 
 def generate_array(
-    schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None, array_max=10
+    schema: Dict[str, Any], definitions: Definitions = None, array_max=10
 ) -> List[Any]:
-    maxitems = schema.get("maxItems", array_max)
     minitems = schema.get("minItems", 0)
+    maxitems = schema.get("maxItems", array_max + minitems)
     try:
         items_schema = schema["items"]
     except KeyError:
@@ -203,7 +209,7 @@ def generate_array(
 
 
 def generate_object(
-    schema: Dict[str, Any], definitions: Optional[Dict[str, Any]] = None
+    schema: Dict[str, Any], definitions: Definitions = None
 ) -> Dict[str, Any]:
     try:
         required_keys = schema["required"]
@@ -222,14 +228,12 @@ def generate_boolean(schema: Dict[str, Any]) -> bool:
     return random.choice([True, False])
 
 
-def generate_of(
-    schemas: List[Dict[str, Any]], definitions: Optional[Dict[str, Any]] = None
-) -> Any:
+def generate_of(schemas: List[Dict[str, Any]], definitions: Definitions = None) -> Any:
     return generate(random.choice(schemas), _definitions=definitions)
 
 
 def get_definition_generator(schema: Dict[str, Any]) -> Callable:
-    def new_func(definitions: Optional[Dict[str, Any]] = None):
+    def new_func(definitions: Definitions = None):
         return generate(schema, _definitions=definitions)
 
     return new_func
