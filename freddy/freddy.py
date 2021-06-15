@@ -1,5 +1,6 @@
 import copy
 import datetime
+import rstr
 import random
 import string
 from typing import Any, Callable, Dict, List, Tuple, Union
@@ -23,7 +24,6 @@ _unsupported_jsonschema_keys = (
     "then",
     "else",
     "multipleOf",
-    "pattern",
     "patternProperties",
     "dependencies",
     "maxProperties",
@@ -116,6 +116,10 @@ def generate(schema: Dict[str, Any], _definitions: Definitions = None) -> Any:
 
 
 def generate_string(schema: Dict[str, Any], string_max: int = 10) -> str:
+    pattern = schema.get("pattern")
+    if pattern is not None:
+        return rstr.xeger(pattern)
+
     supported_formats = ("date-time", "date", "time")
     _format = schema.get("format")
     if _format and _format in supported_formats:
