@@ -1,10 +1,13 @@
+import random
+import re
 import unittest
 from typing import List, Optional
 
-import freddy
 import jsonschema
 import pydantic
 import pytest
+
+import freddy
 
 
 class TestBasicType(unittest.TestCase):
@@ -53,6 +56,25 @@ class TestConst(TestBasicType):
         self.assertEqual(self._makeOne(schema), {"hello": "world"})
 
 
+REGEX_TEST_PATTERNS = [
+    r"\d{4}-(12|11|10|0?[1-9])-(31|30|[0-2]?\d)T(2[0-3]|1\d|0?[0-9])(:(\d|[0-5]\d)){2}(\.\d{3})?Z",
+    r"^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$",
+    r"^(0|[1-9]\d*)(\.(0|[1-9]\d*)){2}(-(0|[1-9]\d*|\d*[-a-zA-Z][-\da-zA-Z]*)(\.(0|[1-9]\d*|\d*[-a-zA-Z][-\da-zA-Z]*))*)?(\+[-\da-zA-Z]+(\.[-\da-zA-Z-]+)*)?$",
+    r"^(ju)/(qu)/(ss|qq|fl)(/[\w/-]+)+$",
+    r"^(jg)/(du)/qw(/[\w/-]+)+$",
+    r"^(jd)/(ru)/s(/[\w/-]+)+$",
+    r"^([a-zA-Z0-9_]+)$",
+    r"^(p|s|qw|sd|aa:([^/\s,]+/[^/\s,]+|\[[^/\s,]+/[^/\s,]+(,[^/\s]+/[^/,\s]+)*\]))$",
+    r"^[-_a-zA-Z0-9]+$",
+]
+
+
+def _check_regex_and_string(generated_string: str, pattern: str) -> None:
+    compiled_pattern = re.compile(pattern)
+    match: re.Match = compiled_pattern.search(generated_string)
+    assert match is not None
+
+
 class TestString(TestBasicType):
     def test_returns_string(self):
         self.assertIsInstance(self._makeOne({"type": "string"}), str)
@@ -65,6 +87,19 @@ class TestString(TestBasicType):
             len(self._makeOne({"type": "string", "minLength": 0, "maxLength": 2})),
             [0, 1, 2],
         )
+
+    def test_all_regex_patterns(self):
+        for pattern in REGEX_TEST_PATTERNS:
+            generated_string = self._makeOne({"type": "string", "pattern": pattern})
+
+            _check_regex_and_string(generated_string, pattern)
+
+    def test_regex_has_precedence_over_other_string_options(self):
+        pattern = REGEX_TEST_PATTERNS[0]
+        generated_string = self._makeOne(
+            {"type": "string", "minLength": 1, "maxLength": 500, "pattern": pattern}
+        )
+        _check_regex_and_string(generated_string, pattern)
 
 
 class TestNumbers(TestBasicType):
@@ -175,6 +210,10 @@ class Person(pydantic.BaseModel):
     has_children: bool
     pet_count: Optional[int] = 0
     nicknames: List[str]
+    random_regex: str = pydantic.Field(..., regex=random.choice(REGEX_TEST_PATTERNS))
+    random_list_strings: List[str] = pydantic.Field(
+        ..., regex=random.choice(REGEX_TEST_PATTERNS)
+    )
 
 
 class TestPydanticModel(unittest.TestCase):
@@ -188,6 +227,8 @@ class TestPydanticModel(unittest.TestCase):
         self.assertIsInstance(person["age"], int)
         self.assertIsInstance(person["has_children"], bool)
         self.assertIsInstance(person["nicknames"], list)
+        self.assertIsInstance(person["random_regex"], str)
+        self.assertIsInstance(person["random_list_strings"], list)
         for n in person["nicknames"]:
             self.assertIsInstance(n, str)
         if "pet_count" in person:
