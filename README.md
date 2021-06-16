@@ -12,7 +12,7 @@ Works both for json schema and pydantic models.
 from pprint import pprint
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import freddy
 
 
@@ -21,6 +21,7 @@ class User(BaseModel):
     name = 'John Doe'
     signup_ts: Optional[datetime] = None
     friends: List[int] = []
+    pattern_field: str = Field(..., regex=r"^[-_a-zA-Z0-9]+$")
 
 
 sample = freddy.sample(User)
