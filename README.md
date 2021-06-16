@@ -9,25 +9,26 @@ Works both for json schema and pydantic models.
 
 ### pydantic
 ```python
+import datetime
 from pprint import pprint
-from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import freddy
 
 
 class User(BaseModel):
     id: int
     name = 'John Doe'
-    signup_ts: Optional[datetime] = None
+    signup_ts: Optional[datetime.datetime] = None
     friends: List[int] = []
+    pattern_field: str = Field(..., regex=r"^[-_a-zA-Z0-9]+$")
 
 
 sample = freddy.sample(User)
 pprint(sample)
-{'friends': [717, 235, 439, 589], 'id': 565, 'signup_ts': '1907-06-22T18:01:00'}
+{'id': 452, 'signup_ts': '1903-03-12T20:20:00', 'friends': [675, 408], 'pattern_field': 'EUvKs7BIK-Ne', 'name': 'xfphlync'}
 User.validate(sample)
-User(id=565, signup_ts=datetime.datetime(1907, 6, 22, 18, 1), friends=[717, 235, 439, 589], name='John Doe')
+User(id=452, signup_ts=datetime.datetime(1903, 3, 12, 20, 20), friends=[675, 408], pattern_field='EUvKs7BIK-Ne', name='xfphlync')
 ```
 
 ### jsonschema
@@ -140,10 +141,10 @@ Conforms to JSON Schema Draft 7. The following features are supported:
 - [x] `exclusiveMinimum` and `exclusiveMaximum` in integers and
       numbers.
 - [x] number `multipleOf` keyword
+- [x] string `pattern` regex keyword
 
 - [ ] `required` keyword
 - [ ] `additionalProperties`
-- [ ] string `pattern` regex keyword
 - [ ] all string built-in formats
 - [ ] be able to provide custom basic type factories
 - [ ] multiple types: `{"type": ["string", "array"]}`

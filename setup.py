@@ -28,6 +28,6 @@ setup(
     zip_safe=True,
     include_package_data=True,
     packages=find_packages(exclude=["ez_setup"]),
-    install_requires=[],
+    install_requires=["rstr"],
     extras_require={"test": ["pytest", "jsonschema", "pydantic"]},
 )
