@@ -59,7 +59,8 @@ class TestConst(TestBasicType):
 REGEX_TEST_PATTERNS = [
     r"\d{4}-(12|11|10|0?[1-9])-(31|30|[0-2]?\d)T(2[0-3]|1\d|0?[0-9])(:(\d|[0-5]\d)){2}(\.\d{3})?Z",
     r"^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$",
-    r"^(0|[1-9]\d*)(\.(0|[1-9]\d*)){2}(-(0|[1-9]\d*|\d*[-a-zA-Z][-\da-zA-Z]*)(\.(0|[1-9]\d*|\d*[-a-zA-Z][-\da-zA-Z]*))*)?(\+[-\da-zA-Z]+(\.[-\da-zA-Z-]+)*)?$",
+    r"^(0|[1-9]\d*)(\.(0|[1-9]\d*)){2}(-(0|[1-9]\d*|\d*[-a-zA-Z][-\da-zA-Z]*)"  # line continues below
+    r"(\.(0|[1-9]\d*|\d*[-a-zA-Z][-\da-zA-Z]*))*)?(\+[-\da-zA-Z]+(\.[-\da-zA-Z-]+)*)?$",
     r"^(ju)/(qu)/(ss|qq|fl)(/[\w/-]+)+$",
     r"^(jg)/(du)/qw(/[\w/-]+)+$",
     r"^(jd)/(ru)/s(/[\w/-]+)+$",
@@ -71,7 +72,7 @@ REGEX_TEST_PATTERNS = [
 
 def _check_regex_and_string(generated_string: str, pattern: str) -> None:
     compiled_pattern = re.compile(pattern)
-    match: re.Match = compiled_pattern.search(generated_string)
+    match: Optional[re.Match] = compiled_pattern.search(generated_string)
     assert match is not None
 
 
