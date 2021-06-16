@@ -1,9 +1,10 @@
 import copy
 import datetime
-import rstr
 import random
 import string
 from typing import Any, Callable, Dict, List, Tuple, Union
+
+import rstr
 
 from .exceptions import InvalidSchema, UnsupportedSchema, UnsupportedType
 from .types import Definitions
