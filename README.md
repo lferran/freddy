@@ -141,10 +141,10 @@ Conforms to JSON Schema Draft 7. The following features are supported:
 - [x] `exclusiveMinimum` and `exclusiveMaximum` in integers and
       numbers.
 - [x] number `multipleOf` keyword
+- [x] string `pattern` regex keyword
 
 - [ ] `required` keyword
 - [ ] `additionalProperties`
-- [ ] string `pattern` regex keyword
 - [ ] all string built-in formats
 - [ ] be able to provide custom basic type factories
 - [ ] multiple types: `{"type": ["string", "array"]}`
