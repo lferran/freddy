@@ -1,9 +1,8 @@
 name: freddy
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-
   # Job to run pre-checks
   pre-checks:
     runs-on: ubuntu-latest
