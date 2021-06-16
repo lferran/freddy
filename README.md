@@ -9,8 +9,8 @@ Works both for json schema and pydantic models.
 
 ### pydantic
 ```python
+import datetime
 from pprint import pprint
-from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, Field
 import freddy
@@ -19,16 +19,16 @@ import freddy
 class User(BaseModel):
     id: int
     name = 'John Doe'
-    signup_ts: Optional[datetime] = None
+    signup_ts: Optional[datetime.datetime] = None
     friends: List[int] = []
     pattern_field: str = Field(..., regex=r"^[-_a-zA-Z0-9]+$")
 
 
 sample = freddy.sample(User)
 pprint(sample)
-{'friends': [717, 235, 439, 589], 'id': 565, 'signup_ts': '1907-06-22T18:01:00'}
+{'id': 357, 'friends': [308, 613, 549, 35, 869, 460, 630, 961], 'pattern_field': 'rI', 'name': 'yghyjdcsat'}
 User.validate(sample)
-User(id=565, signup_ts=datetime.datetime(1907, 6, 22, 18, 1), friends=[717, 235, 439, 589], name='John Doe')
+User(id=565, signup_ts=datetime.datetime(1907, 6, 22, 18, 1), friends=[717, 235, 439, 589], pattern_field='rI', name='John Doe')
 ```
 
 ### jsonschema
