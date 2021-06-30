@@ -1,3 +1,8 @@
+3.1.0
+-----
+
+- Added support for string pattern
+
 3.0.1
 -----
 
